@@ -1,21 +1,244 @@
 <!doctype html>
 <html>
 	<head>
-		<base href="/ngmap-sandbox">
+		<base href="http://vagrantserver.com/ngmap-sandbox/src/">
 		<meta charset="utf-8">
+		<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet" type="text/css">
+		<style>
+		    .ui-splashscreen {
+		        font-family: 'Source Sans Pro', sans-serif;
+		        display: block !important;
+		        position: fixed;
+		        top: 0;
+		        bottom: 0;
+		        left: 0;
+		        right: 0;
+		        background: #fff;
+		        z-index: 9999;
+		        opacity:0;
+		        visibility: hidden;
+		        -webkit-transition: visibility 0s ease-out 0.7s, opacity 0.7s ease-out 0.5s;
+		        -moz-transition: visibility 0s ease-out 0.7s, opacity 0.7s ease-out 0.5s;
+		        transition: visibility 0s ease-out 0.7s, opacity 0.7s ease-out 0.5s;
+		    }
+		    .ui-splashscreen .text {
+
+		        color: gray;
+		        text-align: center;
+		        width: 270px;
+		        height: 50px;
+		        position: absolute;
+		        top: 50%;
+		        left: 50%;
+		        margin-top: 5px;
+		        margin-left: -135px;
+		        font-size: 18px;
+		        opacity:0;
+		        visibility: hidden;
+		        -webkit-transition: visibility 0s ease-out, opacity 0.5s ease-out;
+		        -moz-transition: visibility 0s ease-out, opacity 0.5s ease-out;
+		        transition: visibility 0s ease-out, opacity 0.5s ease-out;
+		    }
+
+		    .ui-splashscreen .loader {
+		        background-color: transparent;
+		        margin: 0 auto;
+		        font-size: 10px;
+		        text-indent: -9999em;
+		        border-top: 2px solid rgba(0, 0, 0, 0.5);
+		        border-right: 2px solid rgba(0, 0, 0, 0.2);
+		        border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+		        border-left: 2px solid rgba(0, 0, 0, 0.2);
+		        -webkit-animation: loader 700ms infinite linear;
+		        animation: loader 700ms infinite linear;
+		    }
+
+		    .ui-splashscreen .loader,
+		    .ui-splashscreen .loader:after {
+		        border-radius: 50%;
+		        width: 34px;
+		        height: 34px;
+		        margin-top: -50px;
+		        margin-left: -17px;
+		        position: absolute;
+		        top: 50%;
+		        left: 50%;
+		    }
+
+		    @-webkit-keyframes loader {
+		        0% {
+		            -webkit-transform: rotate(0deg);
+		            transform: rotate(0deg);
+		        }
+		        100% {
+		            -webkit-transform: rotate(360deg);
+		            transform: rotate(360deg);
+		        }
+		    }
+
+		    @keyframes loader {
+		        0% {
+		            -webkit-transform: rotate(0deg);
+		            transform: rotate(0deg);
+		        }
+		        100% {
+		            -webkit-transform: rotate(360deg);
+		            transform: rotate(360deg);
+		        }
+		    }
+
+		    /*.ui-splashscreen {*/
+		    [ng-cloak].ui-splashscreen {
+		        opacity: 1;
+		        visibility: visible;
+		    }
+		    /*.ui-splashscreen .text {*/
+		    [ng-cloak].ui-splashscreen .text {
+		        opacity: 1;
+		        visibility: visible;
+		    }
+
+		    body {
+		    	font-family: 'Source Sans Pro', sans-serif;
+		    }
+
+		    .map {
+				position: absolute;
+				top: 24px;
+				right: 0;
+				left: 0;
+				bottom: 0;
+		    }
+
+		    .debug {
+
+		    	position: absolute;
+		    	height: 24px;
+		    	top: 0;
+		    	left: 0;
+		    	right: 0;
+		    }
+
+		    .map-label {
+		    	width: 56px;
+		    	height: 48px;
+		    }
+
+		    .map-label .inner {
+		    	position: absolute;
+		    	top: 0;
+		    	left: 0;
+				width: 56px; 
+				height: 34px;
+				background-color: transparent;
+				border-radius: 5px;
+			}
+
+			.map-label .drop {
+				position: absolute;
+				top: 32px;
+				left: 13px;
+				width: 30px;
+				z-index: -1;
+				display: none;
+			}
+
+			.map-label.selected .drop {
+				display: block;
+			}
+
+			.map-label .text {
+
+				color: #fff;
+				text-align: center;
+				white-space: nowrap;
+				font-family: 'Source Sans Pro', sans-serif;
+				font-weight: bold;
+				position: absolute;
+				top: 8px;
+				width: 56px;
+				font-size: 14px;
+			}
+
+			.map-pinpoint { 
+				width: 30px;
+				height: 34px;
+			}
+
+			.map-pinpoint .inner {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 30px;
+				height: 34px;
+				background-color: transparent;
+				border-radius: 5px;
+			}
+
+			.map-pinpoint .shape {
+				position: absolute;
+				width: 20px;
+				top: 0;
+				left: 5px;
+			}
+
+			.map-pinpoint .drop {
+				position: absolute;
+				top: 18px;
+				left: 0;
+				width: 30px;
+				z-index: -1;
+				display: none;
+			}
+
+			.map-pinpoint.selected .drop {
+				display: block;
+			}
+
+		</style>
 	</head>
 	<body ng-app="app">
 
+		<div ng-cloak class="ui-splashscreen">
+		    <div class="loader"></div>
+		    <div class="text">Loading</div>
+		</div>
 
 		<div ng-controller="App as vm">
 			
+			<div google-map map-name="'main-map'" on-init="vm.onInit(map)">
+				
+			</div>
 
+			<div class="debug">
+				Maptype:
+				<button ng-click="vm.setMapType('roadmap')">Roadmap</button>
+				<button ng-click="vm.setMapType('satellite')">Satellite</button>
+				<button ng-click="vm.setMapType('streetview')">Streetview</button>
+				Markertype:
+				<button ng-click="vm.setMarkerType('label')">Labels</button>
+				<button ng-click="vm.setMarkerType('pinpoint')">Pinpoints</button>
+				Selectionmode:
+				<button ng-click="vm.setSelectionMode('none')">None</button>
+				<button ng-click="vm.setSelectionMode('polygon')">Polygon</button>
+				<button ng-click="vm.setSelectionMode('rectangle')">Rectangle</button>
+
+			</div>
 
 		</div>
-		
+		<script src="//maps.google.com/maps/api/js?libraries=drawing"></script>
+		<script src="vendor/markerwithlabel_packed.js"></script>
+		<script src="libs/underscore/underscore.js"></script>
+		<script src="libs/angular/angular.js"></script>
+		<script src="libs/ngmap/ng-map.js"></script>
 		<script src="app/app.module.js"></script>
 		<script src="app/app.controller.js"></script>
+		<script src="app/configs/google-map.config.js"></script>
 		<script src="app/google-map/google-map.module.js"></script>
-		<script src="app/google-map/google-map.controller.js"></script>
+		<script src="app/google-map/drawing-manager/drawing-manager.provider.js"></script>
+		<script src="app/google-map/google-maps.js"></script>
+		<script src="app/google-map/google-map-marker.js"></script>
+		<script src="app/google-map/google-map.provider.js"></script>
+		<script src="app/google-map/google-map.directive.js"></script>
 	</body>
 </html>
