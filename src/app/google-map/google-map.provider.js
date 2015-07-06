@@ -127,7 +127,7 @@
 
                 _.each(this.markers, function(marker) {
 
-                    marker.getMarker().setMap(self.map);
+                    marker.createMarker().setMap(self.map);
                 });
             };
 
@@ -162,7 +162,7 @@
             // DrawingManager: Attach instance of a drawing manager to map
             GoogleMap.prototype.setDrawingManager = function(drawingManager) {
 
-                drawingManager.setMap(this.map);
+                drawingManager.setGoogleMap(this);
                 this.drawingManager = drawingManager;
             };
 

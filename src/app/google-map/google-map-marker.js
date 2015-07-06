@@ -47,6 +47,16 @@
 
                 GoogleMapMarker.prototype.getMarker = function() {
 
+                    return this.marker;
+                };
+
+                GoogleMapMarker.prototype.getDetails = function() {
+
+                    return this.parsedAttrs || {};
+                };
+
+                GoogleMapMarker.prototype.createMarker = function() {
+
                     var self = this;
 
                     // Destroy previous reference
@@ -54,9 +64,9 @@
                         this.marker.setMap(null);
                     }
 
-                    var attrs = this.parseAttrs(this.attrs);
+                    this.parsedAttrs = this.parseAttrs(this.attrs);
 
-                    this.marker = new GoogleMapMarkerWithLabel(this.getMarkerType(attrs.markerType, attrs));
+                    this.marker = new GoogleMapMarkerWithLabel(this.getMarkerType(this.parsedAttrs.markerType, this.parsedAttrs));
                     google.maps.event.addListener(this.marker, 'click', function() {
 
                         self.onClick.apply(self, arguments);
