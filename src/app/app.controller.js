@@ -13,6 +13,7 @@
         vm.setMapType = setMapType;
         vm.setMarkerType = setMarkerType;
         vm.setSelectionMode = setSelectionMode;
+        vm.clearSelections = clearSelections;
 
         activate();
 
@@ -36,6 +37,16 @@
                         latitude: obj.location_latitude,
                         longitude: obj.location_longitude,
                         color: randomColor(),
+                        events: {
+                            onClick: function() {
+
+                                this.attrs.selected = !this.attrs.selected;
+                            },
+                            onSelect: function() {
+
+                                this.attrs.selected = true;
+                            }
+                        },
                         markerType: function() {
                             return googleMap.getMarkerType();
                         },
@@ -113,10 +124,16 @@
 
         function setSelectionMode(mode) {
 
-
             var map = GoogleMaps.get('main-map');
             var drawingManager = map.getDrawingManager();
             drawingManager.setDrawingMode(mode);
+        }
+
+        function clearSelections() {
+
+            var map = GoogleMaps.get('main-map');
+            var drawingManager = map.getDrawingManager();
+            drawingManager.clearDrawings();
         }
 
     }

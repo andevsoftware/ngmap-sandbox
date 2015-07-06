@@ -24,6 +24,8 @@
 
                 this.options = _.extend(defaultOptions, localOptions);
 
+                this.overlays = [];
+
                 this.createManager();
             }
 
@@ -31,8 +33,6 @@
             DrawingManager.prototype.createManager = function() {
 
                 this.manager = new google.maps.drawing.DrawingManager(this.options);
-
-                console.debug('manager', this.manager);
             };
  
             // Manager: Get manager
@@ -68,6 +68,11 @@
                 self.selectColor('#1E90FF');
                 self.setDrawingMode(null);
 
+                google.maps.event.addListener(drawingManager, 'overlaycomplete', function() {
+
+                    self.onOverlayComplete.apply(self, arguments);
+                });
+
                 // Setup event handler: Fires when user has finished drawing a polygon
                 google.maps.event.addListener(drawingManager, 'polygoncomplete', function() {
 
@@ -78,33 +83,6 @@
                 google.maps.event.addListener(drawingManager, 'rectanglecomplete', function() {
 
                     self.onRectangleComplete.apply(self, arguments);
-                });
-
-                google.maps.event.addListener(drawingManager, 'overlaycomplete', function(e) {
-
-                    if (e.type != google.maps.drawing.OverlayType.MARKER) {
-                        
-                        // Switch back to non-drawing mode after drawing a shape.
-                        // drawingManager.setDrawingMode(null);
-
-                        // Add an event listener that selects the newly-drawn shape when the user
-                        // mouses down on it.
-                        // var newShape = e.overlay;
-                        // newShape.type = e.type;
-                        // google.maps.event.addListener(newShape, 'click', function() {
-                            // self.setSelection(newShape);
-                        // });
-
-                        // self.setSelection(newShape);
-                    }
-                });
-
-                // Clear the current selection when the drawing mode is changed, or when the
-                // map is clicked.
-                google.maps.event.addListener(drawingManager, 'drawingmode_changed', function(e) {
-
-                    // console.debug('drawingmode_changed', e);
-                    // self.clearSelection();
                 });
             };
 
@@ -130,6 +108,14 @@
                 this.manager.setOptions({ drawingMode: drawingMode });
             };
 
+            // Manager: Clear drawings
+            DrawingManager.prototype.clearDrawings = function() {
+
+                _.each(this.overlays, function(overlay) {
+                    overlay.setMap(null);
+                });
+            };
+
             // Selection: Select color for shapes
             DrawingManager.prototype.selectColor = function(color) {
 
@@ -148,6 +134,13 @@
                 drawingManager.set('polygonOptions', polygonOptions);
             };
 
+            // Selection: Gets fired when user has drawn polygon/rectangle
+            DrawingManager.prototype.onOverlayComplete = function(e) {
+
+                this.overlays = this.overlays || [];
+                this.overlays.push(e.overlay);
+            };
+
             // Selection: Gets fired when user has drawn polygon
             DrawingManager.prototype.onPolygonComplete = function(polygon) {
 
@@ -159,86 +152,117 @@
                 // the drag handles to reshape the polygon
                 drawingManager.setDrawingMode(null);
 
-                console.debug('Okay, so here we have a drawed polygon', polygon);
-
                 // Here we attach the event needed
                 // to get notified when the user reshapes the polygon 
                 // using the handles
                 google.maps.event.addListener(polygon.getPath(), 'insert_at', function(index, obj) {
-                    console.debug('insert_at', index, obj);
                     self.getMarkersInsidePolygon(polygon);
                 });
                 google.maps.event.addListener(polygon.getPath(), 'set_at', function(index, obj) {
-                    console.debug('set at', index, obj);
                     self.getMarkersInsidePolygon(polygon);
                 });
 
-                // Get markers
-                this.getMarkersInsidePolygon(polygon);
+                // Get markers and trigger select
+                this.selectMarkersInsidePolygon();
             };
 
+            // Polygon Selection: Get markers that are inside
+            DrawingManager.prototype.selectMarkersInsidePolygon = function(polygon) {
+
+                var markers = this.getMarkersInsidePolygon(polygon);
+
+                _.each(markers, function(marker) {
+
+                    marker.onSelect();
+                });
+
+                // Make sure the markers refresh their properties
+                this.googleMap.updateMarkers();
+            }
+
+            // Polygon Selection: Get markers that are inside
             DrawingManager.prototype.getMarkersInsidePolygon = function(polygon) {
 
                 var self = this;
 
                 // Here we loop through the existing markers
                 // Checking for each whether they are inside the polygon
-                _.each(self.googleMap.getMarkers(), function(googleMarker) {
+                var markers = _.filter(self.googleMap.getMarkers(), function(googleMarker) {
 
                     var marker = googleMarker.getMarker();
-                    var details = googleMarker.getDetails();
                     var position = marker.getPosition();
 
                     if (polygon.containsLatLng(position)) {
 
-                        console.debug(details.value + 'I\'m inside the polygon', googleMarker);
+                        return googleMarker;
                     }
                 });
+
+                return markers;
             };
 
             // Selection: Gets fired when user has drawn polygon
-            DrawingManager.prototype.onRectangleComplete = function(e) {
+            DrawingManager.prototype.onRectangleComplete = function(rectangle) {
 
-                console.debug('onRectangleComplete', e);
-            };
+                // Get the markers
+                var self = this;
+                var drawingManager = this.manager;
 
-            // Selection: Clear selected shape
-            DrawingManager.prototype.clearSelection = function() {
+                // First set drawing mode back to null
+                // So that the user is directly able to use
+                // the drag handles to reshape the rectangle
+                drawingManager.setDrawingMode(null);
 
-                if (this.selectedShape) {
-                    this.selectedShape.setEditable(false);
-                    this.selectedShape = null;
-                }
-            };
+                // Here we attach the event needed
+                // to get notified when the user reshapes the rectangle 
+                // using the handles
+                google.maps.event.addListener(rectangle, 'bounds_changed', function(index, obj) {
+                    self.selectMarkersInsideRectangle(rectangle);
+                });
 
-            // Selection: Set selected shape
-            DrawingManager.prototype.setSelection = function(shape) {
+                // Get markers and trigger select
+                this.selectMarkersInsideRectangle(rectangle);
+
                 
-                this.clearSelection();
-                this.selectedShape = shape;
-                shape.setEditable(true);
-                this.selectColor(shape.get('fillColor') || shape.get('strokeColor'));
             };
 
-            // Selection: Delete selected shape from map
-            DrawingManager.prototype.deleteSelectedShape = function() {
+            // Rectangle Selection: Select markers that are inside rectangle
+            DrawingManager.prototype.selectMarkersInsideRectangle = function(rectangle) {
 
-                if (this.selectedShape) {
-                    this.selectedShape.setMap(null);
-                }
+                var markers = this.getMarkersInsideRectangle(rectangle);
+
+                _.each(markers, function(marker) {
+
+                    marker.onSelect();
+                });
+
+                // Make sure the markers refresh their properties
+                this.googleMap.updateMarkers();
             };
 
-            // Selection: Give the selected shape a fancy color
-            DrawingManager.prototype.setSelectedShapeColor = function(color) {
-                
-                if (this.selectedShape) {
-                    
-                    if (this.selectedShape.type == google.maps.drawing.OverlayType.POLYLINE) {
-                        this.selectedShape.set('strokeColor', color);
-                    } else {
-                        this.selectedShape.set('fillColor', color);
+            // Rectangle Selection: Get markers that are inside rectangle
+            DrawingManager.prototype.getMarkersInsideRectangle = function(rectangle) {
+
+                var self = this;
+
+                // First get bounds
+                var bounds = rectangle.getBounds();
+
+                // Then, for each marker
+                // Check if it's inside those bounds
+                var markers = _.filter(self.googleMap.getMarkers(), function(googleMarker) {
+
+                    var marker = googleMarker.getMarker();
+                    var position = marker.getPosition();
+
+                    if (bounds.contains(position)) {
+                        return googleMarker;
                     }
-                }
+
+                    return false;
+                });
+
+                return markers;
             };
 
             return DrawingManager;

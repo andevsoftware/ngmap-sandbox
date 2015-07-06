@@ -67,10 +67,18 @@
                     this.parsedAttrs = this.parseAttrs(this.attrs);
 
                     this.marker = new GoogleMapMarkerWithLabel(this.getMarkerType(this.parsedAttrs.markerType, this.parsedAttrs));
+                  
+                    // Attach events
                     google.maps.event.addListener(this.marker, 'click', function() {
 
-                        self.onClick.apply(self, arguments);
-                    });
+                        if (!self.attrs.events || !self.attrs.events.onClick) {
+                            return;
+                        }
+
+                        self.attrs.events.onClick.apply(self, arguments);
+
+                        self.updateMarker();
+                    });    
 
                     return this.marker;
                 };
@@ -82,13 +90,14 @@
                     this.marker.setOptions(this.getMarkerType(attrs.markerType, attrs));
                 };
 
-                GoogleMapMarker.prototype.onClick = function(bla) {
+                // DrawingManager: delegate methods
+                GoogleMapMarker.prototype.onSelect = function() {
 
-                    console.log('clicked: ', this, bla);
+                    if (!this.attrs.events || !this.attrs.events.onSelect) {
+                        return;
+                    }
 
-                    this.attrs.selected = !this.attrs.selected;
-
-                    this.updateMarker();
+                    this.attrs.events.onSelect.apply(this, arguments);
                 };
 
                 GoogleMapMarker.build = function(attrs) {

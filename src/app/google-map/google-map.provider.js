@@ -104,8 +104,6 @@
 
                 var googleMap = this;
 
-                console.debug('markers', markers);
-
                 // Delete old markers
                 this.deleteMarkers();
 
