@@ -20,39 +20,20 @@
                 
                 function GoogleMapMarker(attrs) {
 
-                    this.attrs = attrs;
+                    _.extend(this, attrs);
                 }
 
-                GoogleMapMarker.prototype.parseAttrs = function(attrs) {
+                GoogleMapMarker.prototype.createOptions = function() {
 
-                    var parsed = {};
+                    var type = this.getMarkerType();
+                    var optionsFn = markerTypes[type];
 
-                    _.each(attrs, function (attr, key) {
-
-                        if (_.isFunction(attr)) {
-
-                            return parsed[key] = attr.apply(this, []);
-                        }
-
-                        return parsed[key] = attr;
-                    });
-
-                    return parsed;
-                };
-
-                GoogleMapMarker.prototype.getMarkerType = function(name, data) {
-
-                    return markerTypes[name].apply(this, [google, data]);
+                    return optionsFn.apply(this, [google]);
                 };
 
                 GoogleMapMarker.prototype.getMarker = function() {
 
                     return this.marker;
-                };
-
-                GoogleMapMarker.prototype.getDetails = function() {
-
-                    return this.parsedAttrs || {};
                 };
 
                 GoogleMapMarker.prototype.createMarker = function() {
@@ -64,18 +45,16 @@
                         this.marker.setMap(null);
                     }
 
-                    this.parsedAttrs = this.parseAttrs(this.attrs);
-
-                    this.marker = new GoogleMapMarkerWithLabel(this.getMarkerType(this.parsedAttrs.markerType, this.parsedAttrs));
+                    this.marker = new GoogleMapMarkerWithLabel(this.createOptions());
                   
                     // Attach events
                     google.maps.event.addListener(this.marker, 'click', function() {
 
-                        if (!self.attrs.events || !self.attrs.events.onClick) {
+                        if (!self.events || !self.events.onClick) {
                             return;
                         }
 
-                        self.attrs.events.onClick.apply(self, arguments);
+                        self.events.onClick.apply(self, arguments);
 
                         self.updateMarker();
                     });    
@@ -85,19 +64,18 @@
 
                 GoogleMapMarker.prototype.updateMarker = function() {
 
-                    var attrs = this.parseAttrs(this.attrs);
-
-                    this.marker.setOptions(this.getMarkerType(attrs.markerType, attrs));
+                    var options = this.createOptions();
+                    this.marker.setOptions(options);
                 };
 
                 // DrawingManager: delegate methods
                 GoogleMapMarker.prototype.onSelect = function() {
 
-                    if (!this.attrs.events || !this.attrs.events.onSelect) {
+                    if (!this.events || !this.events.onSelect) {
                         return;
                     }
 
-                    this.attrs.events.onSelect.apply(this, arguments);
+                    this.events.onSelect.apply(this, arguments);
                 };
 
                 GoogleMapMarker.build = function(attrs) {

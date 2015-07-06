@@ -50,7 +50,7 @@
                 ].join('');
         	}
 
-        	GoogleMapMarkerProvider.setMarkerType('label', function(google, data) {
+        	GoogleMapMarkerProvider.setMarkerType('label', function(google) {
 
         		var html = [
 	        		'<div class="inner">',
@@ -58,18 +58,18 @@
 		        			getSelected(selected.fillColor, selected.strokeColor, selected.fillOpacity),
 		        		'</div>',
 		        		'<div class="shape">',
-		        			getLabel(data.color.fillColor, data.color.strokeColor),
+		        			getLabel(this.color.fillColor, this.color.strokeColor),
 		        		'</div>',
-		        		'<div class="text">' + data.value + '</div>',
+		        		'<div class="text">' + this.getValue() + '</div>',
 	        		'</div>'
         		].join('');
 
                 return {
-                    position: new google.maps.LatLng(data.latitude, data.longitude),
+                    position: new google.maps.LatLng(this.latitude, this.longitude),
                     labelAnchor: new google.maps.Point(28, 40),
-                    labelClass: data.labelClass,
+                    labelClass: this.labelClass,
                     labelInBackground: true,
-                    labelClass: data.selected ? 'map-label selected' : 'map-label',
+                    labelClass: this.selected ? 'map-label selected' : 'map-label',
                     labelContent: html,
                     icon: {
 
@@ -85,7 +85,7 @@
                 };
         	});
 
-        	GoogleMapMarkerProvider.setMarkerType('pinpoint', function(google, data) {
+        	GoogleMapMarkerProvider.setMarkerType('pinpoint', function(google) {
 
                 var html = [
                     '<div class="inner">',
@@ -93,17 +93,17 @@
                             getSelected(selected.fillColor, selected.strokeColor, selected.fillOpacity),
                         '</div>',
                         '<div class="shape">',
-                            getPinpoint(data.color.fillColor, data.color.strokeColor),
+                            getPinpoint(this.color.fillColor, this.color.strokeColor),
                         '</div>',
                     '</div>'
                 ].join('');
 
                 return {
-                    position: new google.maps.LatLng(data.latitude, data.longitude),
+                    position: new google.maps.LatLng(this.latitude, this.longitude),
                     labelAnchor: new google.maps.Point(15, 26),
-                    labelClass: data.labelClass,
+                    labelClass: this.labelClass,
                     labelInBackground: true,
-                    labelClass: data.selected ? 'map-pinpoint selected' : 'map-pinpoint',
+                    labelClass: this.selected ? 'map-pinpoint selected' : 'map-pinpoint',
                     labelContent: html,
                     icon: {
 

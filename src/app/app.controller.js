@@ -14,6 +14,8 @@
         vm.setMarkerType = setMarkerType;
         vm.setSelectionMode = setSelectionMode;
         vm.clearSelections = clearSelections;
+        vm.centerToMarkers = centerToMarkers;
+        vm.centerToSelected = centerToSelected;
 
         activate();
 
@@ -33,6 +35,7 @@
                 data = _.map(data.data, function(obj) {
 
                     return GoogleMapMarker.build({
+                        id: obj.id,
                         selected: false,
                         latitude: obj.location_latitude,
                         longitude: obj.location_longitude,
@@ -40,17 +43,17 @@
                         events: {
                             onClick: function() {
 
-                                this.attrs.selected = !this.attrs.selected;
+                                this.selected = !this.selected;
                             },
                             onSelect: function() {
 
-                                this.attrs.selected = true;
+                                this.selected = true;
                             }
                         },
-                        markerType: function() {
+                        getMarkerType: function() {
                             return googleMap.getMarkerType();
                         },
-                        value: function() {
+                        getValue: function() {
                             return obj.id || 'no id';
                         }
                     });
@@ -136,5 +139,16 @@
             drawingManager.clearDrawings();
         }
 
+        function centerToMarkers() {
+
+            var map = GoogleMaps.get('main-map');
+            map.centerToMarkers({ id: 159 });
+        }
+
+        function centerToSelected() {
+
+            var map = GoogleMaps.get('main-map');
+            map.centerToMarkers({ selected: true });
+        }
     }
 })();

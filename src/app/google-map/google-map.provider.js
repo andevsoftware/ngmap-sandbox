@@ -86,6 +86,33 @@
                 }
             };
 
+            // Map: center to markers with optional predicate
+            GoogleMap.prototype.centerToMarkers = function(predicate) {
+
+                var bounds = this.getMarkersBounds(predicate);
+
+                this.map.fitBounds(bounds);
+            };
+
+            // Markers: get bounds of markers with optional predicate
+            GoogleMap.prototype.getMarkersBounds = function(predicate) {
+
+                var markers = this.getMarkers(predicate);
+
+                // Create a new bounds object
+                var bounds = new google.maps.LatLngBounds();
+
+                _.each(markers, function(googleMarker) {
+
+                    var marker = googleMarker.getMarker();
+                    var position = marker.getPosition();
+
+                    bounds.extend(position);
+                });
+                
+                return bounds;
+            };
+
             // Markers: Set the marker type eg labels, pinpoints, default
             GoogleMap.prototype.setMarkerType = function(markerType) {
 
@@ -112,10 +139,16 @@
                 this.showMarkers();
             };
 
-            // Markers: Returns the local array with markers
-            GoogleMap.prototype.getMarkers = function() {
+            // Markers: Returns the local array with markers with optional predicate
+            GoogleMap.prototype.getMarkers = function(predicate) {
 
-                return this.markers;
+                var markers = this.markers;
+
+                if (predicate) {
+                    markers = _.filter(markers, predicate);
+                }
+
+                return markers;
             };
 
             // Markers: Sets the map on all markers in the array.
